@@ -1,5 +1,7 @@
 # Dragon's Dogma 2
 
+TODO: Redo this. Seems similar to Elden Ring, where it's actually fine just needs a brightness of 0 or 1. DD2 however has a hard limit of 1k nits regardless of the maximum and brightness, which is surely a bug since you can set a 4k nit maximum.
+
 ## HDR Quirks
 
 This game has the following quirks in HDR:
