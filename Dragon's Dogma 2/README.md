@@ -1,6 +1,6 @@
 # Dragon's Dogma 2
 
-TODO: Redo this. Seems similar to Elden Ring, where it's actually fine just needs a brightness of 0 or 1. DD2 however has a hard limit of 1k nits regardless of the maximum and brightness, which is surely a bug since you can set a 4k nit maximum.
+Similar to Elden Ring and forcing HDR in Unreal. DD2 however has a hard limit of 1k nits regardless of the maximum and brightness, which is surely a bug since you can set a 4k nit maximum.
 
 ## HDR Quirks
 
@@ -22,81 +22,22 @@ only somewhat so. May as well set it as you would assuming it works as expected.
 ### SDR <-> HDR UI Brightness
 
 The UI in HDR appears much dimmer than it does in SDR, and the only way to
-increase the brightness is to turn the overall game brightness in HDR up.
+increase the brightness is to turn the overall game brightness in HDR up, which makes the images less accurate.
 
-## Establishing SDR Reference
+## SDR Reference
 
-The brightness setting screen in SDR was used for establishing a reference to
-match the HDR presentation to.
+The brightness setting screen in SDR was used for lining up a reference to
+match the HDR presentation to. To me, it seemed that 2.2 power law gamma OR BT.1886 could be used. The central image on the screen, which is supposed to not be visible if brightness is set currently, was still very faintly visible under 2.2 power law gamma. I decided to go with BT.1886 this time around.
 
-Here is a screenshot of that image, captured with a forced HDR10 swapchain via
-Special K to showcase how the game looks in SDR on an HDR-enabled Windows system
-with the default sRGB transfer curve applied and a paper white / SDR white of
-203 nits.
-![SDR Brightness Setting Screen](<Dragon's Dogma 2 2026-03-27 20ː21ː44.png>)
+Here's a screensot after applying an additional scale to 203 nits and a gamma adjustment of power 1.155:
+![Picture of an SDR-in-HDR scene from the game, containing a dimly lit room in a castle, with a window letting in bright light, a bed to the left with a candle next to it, and a fireplace on the right with a fire. The dynamic range of the view of the outside through the window is heavily compressed](SDR-Target.png)
 
-For sanity, I'm making a few assumptions and taking a shortcut on the reference.
+## HDR Adjustments
 
-* D65 White
-* sRGB or Power Law 2.2 gamma
-* 100 nits white
+Setting the in-game HDR settings to maximum peak brightness (for the sake of analysis and because my TV can do 2320 nits anyway) and minimum black level, then adjusting the overall brightness to 0 and applying a linear scaling from 150 to 203 and then a power 1.155 gamma adjustment produces an image of the same scene that very nearly matches the SDR target in the low and mid range while uncompressing the upper range.
 
-As the instructions on the setting screen suggest, the image in the middle
-should disappear at the default brightness level. We need to reverse-engineer a
-reference based on this.
+Similarly to forcing HDR in Unreal Engine, I can't seem to find an exact overlapping match in those lower ranges to the SDR target, and the scaling from 150 to 203 is similar as well, so it's possible I haven't figure out the exact process that either engine is using but it's some sort of convention.
 
-### 203 nits SDR adjustment
+![The same scene from the SDR Target, now with in-game HDR turned on. It's largely the same except that the window view is now much brighter and does not look nearly as compressed, and the flames on the candle and the fireplace are brighter as well.](HDR-Result.png)
 
-For SDR content targeting 100 nits that is being scaled to 203 nits (such as for
-use in HDR containers / environments) needs a gamma adjustment in order to
-maintain the same perceptual shadow detail. It is between 1.15x and 1.16x gamma
-adjustment (2.2 * 1.155 = 2.541). Though sRGB targets 80 nits and not 100 nits,
-the difference is small enough and sRGB-targeting games are rare enough that I
-have not looked into deriving a specific multiplier for them and just use 1.155
-still.
-
-This multiplier will need to be applied regardless of the gamma curve as we are
-aiming for 203 nit paper white, so I will apply that now.
-
-![SDR Brightness Setting screen with gamma adjustment applied](<Dragon's Dogma 2 2026-03-27 20ː38ː55.png>)
-
-The image in the center, though much more subtle now, is still clearly visible.
-So, it seems likely this image and hopefully the game as a whole are targeting
-Gamma 2.2 and not sRGB.
-
-### Gamma 2.2 w/ gamma adjustment
-
-![SDR Brightness Setting screen with 2.2 gamma and a gamma adjustment applied](<Dragon's Dogma 2 2026-03-27 20ː42ː42.png>)
-
-After applying the power law 2.2 gamma curve instead of the sRGB curve, the
-center image is indistinguishable from the background on my calibrated TV, and
-so I feel that is reasonable to assume that this settings screen was created
-targeting power law 2.2 gamma, and that the game as a whole should also be
-targeting this.
-
-## Matching HDR to the SDR Reference
-
-![SDR Reference screenshot: Dark and dim medieval room with a candle next to a door, and a window with a glimpse of day outside. The candle and window are near 100% white in SDR, with the edges of the screenshot nearing 0% (black) and providing a good comparison of shadow detail with potential for demonstrating an uncapping in the upper brightness range for the window and candle that HDR would provide](<Dragon's Dogma 2 2026-03-27 21ː11ː45.png>)
-
-This is our reference SDR image with power law 2.2 gamma and an additional gamma
-adjustment made to compensate for the increase in brightness to 203 nites.
-
-Here is the same scene with HDR enabled, using an appropriate peak brightness
-and the default overall brightness.
-
-![Same scene as the SDR reference screenshot. The window and especially the candle are noticeably brighter, but so is the rest of the image including what appears to be lifted shadow detail.](<Dragon's Dogma 2 2026-03-27 21ː06ː00.png>)
-
-There is lifted shadow detail at the default settings compared to the SDR
-reference, so adjustments will need to be made. It does appear to be Real HDR
-though and not Fake HDR (inverse tonemapped SDR), as more highlight detail and
-less clipping is seen outside through the window.
-
-## TODO: Find the best settings
-
-The HDR tonemapper is incredibly strange in this game IMO, and I have not yet
-found settings that match well to the SDR. It's possible that the HDR is just
-not intended to be SDR+, and I shouldn't be trying to match it, but you can get
-very close by setting the overall brightness to 0 or 1. There is a slightly
-elevated black floor at any of the overall brightness settings, but the game
-does not have something as simple as an sRGB <-> 2.2 mismatch I think, when you
-are comparing them back-to-back and looking at the waveforms.
+Without ReShade or som way to enact the 150->203 scaling, you could choose overall brightness 0 or 1 as preferred to step to either side of my result here.
